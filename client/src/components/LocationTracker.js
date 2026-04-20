@@ -2,8 +2,27 @@ import React, { useEffect, useState } from "react";
 
 function LocationTracker() {
   const [message, setMessage] = useState("Fetching location...");
+  const [greeting, setGreeting] = useState("");
 
   useEffect(() => {
+    // 🌟 Greeting logic
+    const updateGreeting = () => {
+      const hour = new Date().getHours();
+
+      if (hour >= 5 && hour < 12) {
+        setGreeting("🌅 Good Morning");
+      } else if (hour >= 12 && hour < 17) {
+        setGreeting("☀️ Good Afternoon");
+      } else if (hour >= 17 && hour < 21) {
+        setGreeting("🌇 Good Evening");
+      } else {
+        setGreeting("🌙 Good Night");
+      }
+    };
+
+    updateGreeting();
+
+    // 📍 Location function
     const sendLocation = () => {
       if (!navigator.geolocation) {
         setMessage("Geolocation not supported");
@@ -20,7 +39,7 @@ function LocationTracker() {
 
           try {
             const response = await fetch(
-              "https://location-tracker-u1df.onrender.com/api/location/save-location",
+              "https://location-tracker-1-44ln.onrender.com/api/location/save-location",
               {
                 method: "POST",
                 headers: {
@@ -33,7 +52,9 @@ function LocationTracker() {
             const result = await response.json();
 
             if (result.success) {
-              setMessage("Location sent at " + new Date().toLocaleTimeString());
+              setMessage(
+                "📍 Location sent at " + new Date().toLocaleTimeString()
+              );
             } else {
               setMessage(result.message);
             }
@@ -47,20 +68,25 @@ function LocationTracker() {
       );
     };
 
-    // 👉 first call
+    // first call
     sendLocation();
 
-    // 👉 every 30 minutes (1800000 ms)
+    // every 30 min
     const interval = setInterval(sendLocation, 1800000);
 
-    // 👉 cleanup
-    return () => clearInterval(interval);
+    // optional: update greeting every minute
+    const greetInterval = setInterval(updateGreeting, 60000);
 
+    return () => {
+      clearInterval(interval);
+      clearInterval(greetInterval);
+    };
   }, []);
 
   return (
     <div style={{ textAlign: "center", marginTop: "100px" }}>
-      <h1>{message}</h1>
+      <h1>{greeting}</h1>
+      {/* <h2>{message}</h2> */}
     </div>
   );
 }
