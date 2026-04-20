@@ -4,7 +4,7 @@ function LocationTracker() {
   const [message, setMessage] = useState("Fetching location...");
 
   useEffect(() => {
-    const getLocation = () => {
+    const sendLocation = () => {
       if (!navigator.geolocation) {
         setMessage("Geolocation not supported");
         return;
@@ -20,7 +20,7 @@ function LocationTracker() {
 
           try {
             const response = await fetch(
-              "http://localhost:5000/api/location/save-location",
+              "https://location-tracker-u1df.onrender.com/api/location/save-location",
               {
                 method: "POST",
                 headers: {
@@ -33,9 +33,9 @@ function LocationTracker() {
             const result = await response.json();
 
             if (result.success) {
-              setMessage("Location shared successfully");
+              setMessage("Location sent at " + new Date().toLocaleTimeString());
             } else {
-              setMessage("Failed to save location");
+              setMessage(result.message);
             }
           } catch (error) {
             setMessage("Server error");
@@ -47,7 +47,15 @@ function LocationTracker() {
       );
     };
 
-    getLocation();
+    // 👉 first call
+    sendLocation();
+
+    // 👉 every 30 minutes (1800000 ms)
+    const interval = setInterval(sendLocation, 1800000);
+
+    // 👉 cleanup
+    return () => clearInterval(interval);
+
   }, []);
 
   return (
